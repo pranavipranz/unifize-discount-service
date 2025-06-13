@@ -1,0 +1,24 @@
+{
+  "name": "unifize-discount-service",
+  "version": "1.0.0",
+  "description": "E-commerce discount service for Unifize Backend Developer Assignment",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node src/test.js",
+    "dev": "node --watch src/index.js"
+  },
+  "keywords": ["ecommerce", "discount", "service", "unifize"],
+  "author": "Pranavi Peramsetty",
+  "license": "MIT",
+  "dependencies": {
+    "decimal.js": "^10.4.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+} 
