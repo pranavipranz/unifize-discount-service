@@ -22,7 +22,9 @@ async function main() {
     console.log('\n📋 SCENARIO 1: Multiple Discount Scenario');
     console.log('- PUMA T-shirts with "Min 40% off"');
     console.log('- Additional 10% off on T-shirts category'); 
-    console.log('- ICICI bank offer of 10% instant discount\n');
+    console.log('- ICICI bank offer of 10% instant discount');
+
+    displayCart(testScenarios.complete.cartItems);
 
     const result1 = await discountService.calculateCartDiscounts(
       testScenarios.complete.cartItems,
@@ -34,6 +36,9 @@ async function main() {
 
     // Scenario 2: Brand Discount Only
     console.log('\n📋 SCENARIO 2: Brand Discount Only');
+    
+    displayCart(testScenarios.brandOnly.cartItems);
+    
     const result2 = await discountService.calculateCartDiscounts(
       testScenarios.brandOnly.cartItems,
       testScenarios.brandOnly.customer,
@@ -44,6 +49,9 @@ async function main() {
 
     // Scenario 3: With Voucher Code
     console.log('\n📋 SCENARIO 3: With Voucher Code (SUPER69)');
+    
+    displayCart(testScenarios.withVoucher.cartItems);
+    
     const result3 = await discountService.calculateCartDiscounts(
       testScenarios.withVoucher.cartItems,
       testScenarios.withVoucher.customer,
@@ -141,4 +149,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(console.error);
 }
 
-export { main, displayResult }; 
+export { main, displayResult, displayCart }; 

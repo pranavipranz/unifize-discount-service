@@ -175,6 +175,9 @@ class DiscountServiceEvaluationTest {
     console.log('-'.repeat(50));
     console.log('PUMA T-shirt + Category discount + ICICI bank offer');
 
+    // Show cart contents for clarity
+    this.displayCart(testScenarios.complete.cartItems);
+
     const result = await this.discountService.calculateCartDiscounts(
       testScenarios.complete.cartItems,
       testScenarios.complete.customer,
@@ -209,6 +212,27 @@ class DiscountServiceEvaluationTest {
       console.log(`❌ ${testName}: FAILED`);
       this.failedTests++;
     }
+  }
+
+  /**
+   * Display cart contents for better test visibility
+   */
+  displayCart(cartItems) {
+    console.log('\n🛒 CART CONTENTS');
+    console.log('-'.repeat(40));
+    
+    cartItems.forEach((item, index) => {
+      console.log(`${index + 1}. ${item.product.brand} ${item.product.category}`);
+      console.log(`   Price: ₹${item.product.base_price} x ${item.quantity} = ₹${item.getTotalPrice()}`);
+      console.log(`   Size: ${item.size}`);
+    });
+    
+    // Calculate total
+    let totalSum = 0;
+    cartItems.forEach(item => {
+      totalSum += parseFloat(item.getTotalPrice().toString());
+    });
+    console.log(`\nCart Total: ₹${totalSum.toFixed(2)}`);
   }
 
   /**
