@@ -4,8 +4,7 @@ import {
   sampleCustomer, 
   sampleCustomerNoVoucher,
   samplePaymentInfo,
-  testScenarios,
-  expectedDiscountCalculation 
+  testScenarios
 } from './data/fake_data.js';
 
 /**

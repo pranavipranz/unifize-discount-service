@@ -185,19 +185,26 @@ class DiscountServiceEvaluationTest {
     );
 
     console.log(`\nResults:`);
-    console.log(`Original: ₹${result.original_price}`);
-    console.log(`Final: ₹${result.final_price}`);
+    console.log(`Original: ₹${result.original_price} (Expected: ₹${expectedDiscountCalculation.original_price})`);
+    console.log(`Final: ₹${result.final_price} (Expected: ₹${expectedDiscountCalculation.final_price})`);
     console.log(`Savings: ₹${result.getTotalDiscount()} (${result.getDiscountPercentage().toFixed(1)}%)`);
 
+    // Validate against expected values
+    const originalMatches = result.original_price.equals(new Decimal(expectedDiscountCalculation.original_price));
+    const finalMatches = result.final_price.equals(new Decimal(expectedDiscountCalculation.final_price));
+    
     const hasPuma = !!result.applied_discounts.Brand_PUMA;
     const hasCategory = !!result.applied_discounts['Category_T-shirts'];
     const hasBank = !!result.applied_discounts.Bank_ICICI;
 
+    console.log(`\nValidation against expected results:`);
+    console.log(`✓ Original price match: ${originalMatches ? 'PASS' : 'FAIL'}`);
+    console.log(`✓ Final price match: ${finalMatches ? 'PASS' : 'FAIL'}`);
     console.log(`✓ PUMA discount: ${hasPuma ? 'Applied' : 'Missing'}`);
     console.log(`✓ T-shirt category: ${hasCategory ? 'Applied' : 'Missing'}`);
     console.log(`✓ ICICI bank offer: ${hasBank ? 'Applied' : 'Missing'}`);
 
-    const scenarioComplete = hasPuma && hasCategory && hasBank;
+    const scenarioComplete = hasPuma && hasCategory && hasBank && originalMatches && finalMatches;
     this.logResult('Assignment Scenario', scenarioComplete);
   }
 
