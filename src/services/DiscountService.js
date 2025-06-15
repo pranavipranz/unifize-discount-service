@@ -52,11 +52,28 @@ export class DiscountService {
   /**
    * Calculate cart discounts with proper precedence
    * Order: Brand/Category -> Voucher -> Bank Offers
+   * @param {Array} cartItems - Array of cart items
+   * @param {Object} customer - Customer profile
+   * @param {Object} paymentInfo - Payment information (optional)
+   * @returns {DiscountedPrice} Final pricing with applied discounts
+   * @throws {Error} If required parameters are missing or invalid
    */
   async calculateCartDiscounts(cartItems, customer, paymentInfo = null) {
     try {
+      // Input validation
+      if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
+        throw new Error('Cart items are required and must be a non-empty array');
+      }
+      
+      if (!customer || typeof customer !== 'object') {
+        throw new Error('Customer profile is required');
+      }
+
       // Calculate original total
       const originalTotal = cartItems.reduce((total, item) => {
+        if (!item.product || !item.product.base_price || !item.quantity) {
+          throw new Error('Invalid cart item: missing product or quantity information');
+        }
         return total.add(item.product.base_price.mul(item.quantity));
       }, new Decimal(0));
 
@@ -75,13 +92,17 @@ export class DiscountService {
       // Step 2: Apply voucher codes (if any in customer profile)
       // For this implementation, assuming voucher code is passed via customer profile
       if (customer.voucherCode) {
-        const { total: afterVoucher, discount, message } 
+        const { total: afterVoucher, discount, message, error } 
           = await this.applyVoucherDiscount(customer.voucherCode, currentTotal, cartItems, customer);
         
         if (discount.gt(0)) {
           currentTotal = afterVoucher;
           appliedDiscounts[`Voucher_${customer.voucherCode}`] = discount;
           discountMessages.push(message);
+        } else if (error) {
+          // Log voucher error but continue with other discounts
+          console.warn(`Voucher validation failed: ${error}`);
+          discountMessages.push(`Voucher ${customer.voucherCode} could not be applied`);
         }
       }
 
@@ -106,7 +127,17 @@ export class DiscountService {
 
     } catch (error) {
       console.error('Error calculating cart discounts:', error);
-      throw new Error('Failed to calculate discounts');
+      
+      // Provide specific error messages based on error type
+      if (error.message.includes('Cart items are required')) {
+        throw new Error('Invalid input: ' + error.message);
+      } else if (error.message.includes('Customer profile is required')) {
+        throw new Error('Invalid input: ' + error.message);
+      } else if (error.message.includes('Invalid cart item')) {
+        throw new Error('Invalid cart data: ' + error.message);
+      } else {
+        throw new Error(`Failed to calculate discounts: ${error.message}`);
+      }
     }
   }
 
@@ -169,9 +200,14 @@ export class DiscountService {
     }
 
     // Validate voucher
-    const isValid = await this.validateDiscountCode(voucherCode, cartItems, customer);
-    if (!isValid) {
-      return { total: currentTotal, discount: new Decimal(0), message: '' };
+    const validation = await this.validateDiscountCode(voucherCode, cartItems, customer);
+    if (!validation.isValid) {
+      return { 
+        total: currentTotal, 
+        discount: new Decimal(0), 
+        message: '',
+        error: validation.error
+      };
     }
 
     const discountAmount = currentTotal.mul(voucher.percentage).div(100);
@@ -207,19 +243,31 @@ export class DiscountService {
   }
 
   /**
-   * Validate discount code
+   * Validate discount code with detailed error messages
+   * @param {string} code - Discount code to validate
+   * @param {Array} cartItems - Cart items for validation
+   * @param {Object} customer - Customer profile
+   * @returns {Object} Validation result with detailed error message
    */
   async validateDiscountCode(code, cartItems, customer) {
     try {
       const voucher = this.voucherCodes.get(code);
       
       if (!voucher) {
-        return false;
+        return { 
+          isValid: false, 
+          error: `Voucher code '${code}' not found`,
+          errorCode: 'VOUCHER_NOT_FOUND'
+        };
       }
 
       // Check expiry
       if (voucher.valid_until && new Date() > voucher.valid_until) {
-        return false;
+        return { 
+          isValid: false, 
+          error: `Voucher code '${code}' has expired on ${voucher.valid_until.toDateString()}`,
+          errorCode: 'VOUCHER_EXPIRED'
+        };
       }
 
       // Check minimum order value against original cart value
@@ -228,21 +276,42 @@ export class DiscountService {
       }, new Decimal(0));
 
       if (voucher.min_order_value && cartTotal.lt(voucher.min_order_value)) {
-        return false;
+        return { 
+          isValid: false, 
+          error: `Minimum order value of ₹${voucher.min_order_value} required. Current cart total: ₹${cartTotal}`,
+          errorCode: 'MIN_ORDER_NOT_MET'
+        };
       }
 
       // Additional validations can be added here:
       // - Brand exclusions
-      // - Category restrictions
+      // - Category restrictions  
       // - Customer tier requirements
       // - Usage limits per customer
 
-      return true;
+      return { 
+        isValid: true, 
+        error: null,
+        errorCode: null
+      };
 
     } catch (error) {
       console.error('Error validating discount code:', error);
-      return false;
+      return { 
+        isValid: false, 
+        error: `System error while validating voucher: ${error.message}`,
+        errorCode: 'SYSTEM_ERROR'
+      };
     }
+  }
+
+  /**
+   * Legacy method for backward compatibility
+   * @deprecated Use validateDiscountCode for detailed validation
+   */
+  async validateDiscountCodeSimple(code, cartItems, customer) {
+    const result = await this.validateDiscountCode(code, cartItems, customer);
+    return result.isValid;
   }
 
   /**

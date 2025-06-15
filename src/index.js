@@ -58,12 +58,15 @@ async function main() {
     
     const validCodes = ['SUPER69', 'WELCOME20', 'INVALID123'];
     for (const code of validCodes) {
-      const isValid = await discountService.validateDiscountCode(
+      const validation = await discountService.validateDiscountCode(
         code, 
         sampleCartItems, 
         sampleCustomer
       );
-      console.log(`Voucher "${code}": ${isValid ? '✅ Valid' : '❌ Invalid'}`);
+      console.log(`Voucher "${code}": ${validation.isValid ? '✅ Valid' : '❌ Invalid'}`);
+      if (!validation.isValid && validation.error) {
+        console.log(`  Error: ${validation.error}`);
+      }
     }
 
     // Show available discounts

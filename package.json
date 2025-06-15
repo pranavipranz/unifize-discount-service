@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "test": "node src/test.js",
+    "test": "node src/evaluation_test.js",
+    "evaluation": "node src/evaluation_test.js",
+    "demo": "node src/index.js",
     "dev": "node --watch src/index.js"
   },
   "keywords": ["ecommerce", "discount", "service", "unifize"],

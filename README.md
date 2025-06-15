@@ -118,16 +118,19 @@ Validates if a discount code can be applied.
 
 ```
 unifize-discount-service/
-├── src/
-│   ├── models/
-│   │   └── index.js          # Data models
-│   ├── services/
-│   │   └── DiscountService.js # Main discount logic
-│   ├── data/
-│   │   └── fake_data.js      # Test data
-│   └── index.js              # Demo application
+├── .gitignore
+├── README.md
 ├── package.json
-└── README.md
+├── package-lock.json
+└── src/
+    ├── models/
+    │   └── index.js          # Data models
+    ├── services/
+    │   └── DiscountService.js # Main discount logic
+    ├── data/
+    │   └── fake_data.js      # Test data scenarios
+    ├── index.js              # Demo application
+    └── evaluation_test.js    # Assignment evaluation tests
 ```
 
 ## 🔧 Configuration
@@ -204,14 +207,18 @@ Discounts Applied:
 ## 🚀 Running the Project
 
 ```bash
+# Run the main demo
+npm start
+# or
+npm run demo
+
+# Run evaluation tests (assignment metrics)
+npm test
+# or  
+npm run evaluation
+
 # Development mode with auto-restart
 npm run dev
-
-# Production mode
-npm start
-
-# Run specific test
-node src/index.js
 ```
 
 ## 📝 Notes
